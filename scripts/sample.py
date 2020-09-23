@@ -1,5 +1,5 @@
 from pprint import pprint as p
-from mt_salesforce import MtSalesForce
+from lib.mt_salesforce import MtSalesForce
 
 
 def main():

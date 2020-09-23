@@ -4,12 +4,12 @@ import os
 import pickle  # object serialize
 from simple_salesforce import Salesforce
 from simple_salesforce.exceptions import *
-import settings
+import lib.settings
 import sys
 import requests
 import json
 import functools
-
+# from  util import *
 
 """ clientの中身
 {'apex_url': 'https://cs6.salesforce.com/services/apexrest/',
@@ -37,7 +37,8 @@ class MtSalesForce():
     """
 
     def __init__(self):
-        self.client_instance_file = './access_object'
+        file_dir = os.path.dirname(os.path.realpath(__file__))
+        self.client_instance_file = '%s/access_object' %( file_dir )
         self.load_client()
 
     ############################################
@@ -78,20 +79,25 @@ class MtSalesForce():
 
     def query(self, soql, retry=0):
         func = functools.partial(self.client.query, soql)
-        return self._request_with_retry(func)
+        res = self._request_with_retry(func)
+        return self.to_json(res['records']) # dataだけ返す
 
     def apexecute(self, api_path, method, data):
         func = functools.partial(self.client.apexecute, api_path, method, data)
-        return self._request_with_retry(func)
-
+        return self.to_json(self._request_with_retry(func))
+    
+    # 戻り値はResponseオブジェクトを返すので、
+    # 利用側でcontetnsからデータを取得する
     def http_request(self, api_path, method, data):
         func = functools.partial(self._http_request, api_path, method, data)
         return self._request_with_retry(func)
 
     ############################################
     # private
-    ############################################
+    ########################DOMAIN####################
 
+    def to_json (self, dict):
+        return json.dumps(dict,ensure_ascii=False)
     # 関数(引数固定済み)を受け取ってそれを実行、
     # 認証失敗の場合、認証を取得し直して一定回数リトライする
 
@@ -118,6 +124,9 @@ class MtSalesForce():
         """ ライブラリを使わないでシンプルにrequestを送る
         """
         path = self.client.base_url + api_path
+        p("path")
+        p(path)
+
         with requests.session() as s:
             response = s.request(
                 method,
