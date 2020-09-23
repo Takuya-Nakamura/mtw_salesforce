@@ -1,5 +1,5 @@
 from pprint import pprint as p
-from lib.mt_salesforce import MtSalesForce
+from lib_mt_salesforce import LibMtSalesForce
 import sys
 import pandas as pd
 from util import * 
@@ -14,7 +14,7 @@ def main():
     check_args(args, 1)
 
     account_category2_address = args[1]
-    msf = MtSalesForce()
+    msf = LibMtSalesForce()
 
     soql =  "SELECT Id,Name,MstCategory__c,Other__c,IsPrimary__c FROM AccountCategory__c" \ 
             "WHERE AccountCategory2Address__c='%s' AND IsPrimary__c = true" %(account_category2_address)

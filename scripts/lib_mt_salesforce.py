@@ -4,7 +4,7 @@ import os
 import pickle  # object serialize
 from simple_salesforce import Salesforce
 from simple_salesforce.exceptions import *
-import lib.settings
+import lib_mt_salesforce_settings as settings
 import sys
 import requests
 import json
@@ -32,7 +32,7 @@ import functools
 """
 
 
-class MtSalesForce():
+class LibMtSalesForce():
     """simple_salesforce を使うためのクラス
     """
 

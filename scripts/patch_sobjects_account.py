@@ -1,5 +1,5 @@
 from pprint import pprint as p
-from lib.mt_salesforce import MtSalesForce
+from lib_mt_salesforce import LibMtSalesForce
 import sys
 import pandas as pd
 from util import * 
@@ -16,7 +16,7 @@ def main():
     # init
     account_id = args[1]
     session_id = args[1]
-    msf = MtSalesForce()
+    msf = LibMtSalesForce()
 
     # main
     api_path = 'sobjects/Account/%s?_HttpMethod=PATCH' % (account_id)

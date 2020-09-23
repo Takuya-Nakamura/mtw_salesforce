@@ -1,5 +1,6 @@
 from pprint import pprint as p
-from lib.mt_salesforce import MtSalesForce
+from lib_mt_salesforce import LibMtSalesForce
+
 import sys
 from util import * 
 
@@ -13,7 +14,7 @@ def main():
 
     object_name = args[1]
     account_id = args[2] # idが不要な場合もある..?
-    msf = MtSalesForce()
+    msf = LibMtSalesForce()
 
     api_path = 'sobjects/%s/%s' %(object_name,account_id)
     payload = {}

@@ -1,5 +1,5 @@
 from pprint import pprint as p
-from lib.mt_salesforce import MtSalesForce
+from lib_mt_salesforce import LibMtSalesForce
 import sys
 from util import * 
 
@@ -13,7 +13,7 @@ def main():
     check_args(args, 1)
 
     account_id = args[1]
-    msf = MtSalesForce()
+    msf = LibMtSalesForce()
 
     api_path = 'account/with_relations?id=%s' %(account_id)
     payload = {}

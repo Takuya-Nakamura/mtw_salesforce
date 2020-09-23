@@ -1,5 +1,6 @@
 from pprint import pprint as p
-from lib.mt_salesforce import MtSalesForce
+from lib_mt_salesforce import LibMtSalesForce
+
 import sys
 from util import * 
 
@@ -12,7 +13,7 @@ def main():
     check_args(args, 1)
     account_category2_address_id = args[1]
     
-    msf = MtSalesForce()
+    msf = LibMtSalesForce
     soql = "SELECT Id,Name,MstCategory__c,Other__c,IsPrimary__c FROM AccountCategory__c WHERE AccountCategory2Address__c='%s'" %(account_category2_address_id)
     
     response =msf.query(soql)

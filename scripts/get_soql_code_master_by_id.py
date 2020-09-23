@@ -1,5 +1,5 @@
 from pprint import pprint as p
-from lib.mt_salesforce import MtSalesForce
+from lib_mt_salesforce import LibMtSalesForce
 import sys
 from util import * 
 
@@ -12,7 +12,7 @@ def main():
     check_args(args, 1)
     id = args[1]
     
-    msf = MtSalesForce()
+    msf = LibMtSalesForce()
     soql = "SELECT Name FROM CodeMaster__c WHERE Id='%s'" %(id)
     
     response =msf.query(soql)

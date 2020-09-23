@@ -1,10 +1,10 @@
 from pprint import pprint as p
-from lib.mt_salesforce import MtSalesForce
+from lib_mt_salesforce import LibMtSalesForce
 
 
 def main():
     p("main")
-    msf = MtSalesForce()
+    msf = LibMtSalesForce()
     p(msf.query("SELECT Id, Name FROM Organization"))
 
     def load_client(self):
