@@ -9,6 +9,9 @@ import sys
 import requests
 import json
 import functools
+import time
+from pathlib import Path
+
 # from  util import *
 
 """ clientの中身
@@ -33,12 +36,16 @@ import functools
 
 
 class LibMtSalesForce():
-    """simple_salesforce を使うためのクラス
+    """simple_salesforceを使うためのクラス
     """
 
     def __init__(self):
+        self.token_expires = 100000  # tokenの有効期限秒
+        self.load_wait = 3  # token_更新待ちの待機時間 
+        
         file_dir = os.path.dirname(os.path.realpath(__file__))
-        self.client_instance_file = '%s/access_object' %( file_dir )
+        self.client_instance_file = '%s/access_object' % (file_dir)
+        self.lock_file = '%s/access_object_lock' % (file_dir)
         self.load_client()
 
     ############################################
@@ -48,30 +55,47 @@ class LibMtSalesForce():
     def load_client(self):
         """set simple_salesforce instance
         """
-        if os.path.exists(self.client_instance_file) == False:
-            p("[Log]]autehntication from salesforce")
+        #lockファイルが有る場合は一定秒wait
+        if os.path.exists(self.lock_file):
+            p("wait")
+            time.sleep(self.load_wait)
+
+        # ファイルが存在する。作成日からexpires秒経過していたら再認証する。
+        p("self.isTokenExpired()")
+        p(self.isTokenExpired())
+
+        if os.path.exists(self.client_instance_file) == False or self.isTokenExpired():
+            p("[Log]]Auth from Salesforce")
             self.authenticate()
             self.load_client()
         else:
             with open(self.client_instance_file, 'rb') as f:
-                p("[Log]autehntication from file")
+                p("[Log]Auth from File")
                 self.client = pickle.load(f)
 
-    def reload_client(self):
-        os.remove(self.client_instance_file)
-        self.load_client()
-
     def authenticate(self):
+        Path(self.lock_file).touch() #create lockfile
         sf = Salesforce(
             username=settings.SALESFORCE_USERNAME,
             password=settings.SALESFORCE_PASSWORD,
             security_token=settings.SALESFORCE_SECURITY_TOKEN,
             organizationId=settings.SALESFORCE_ORGANIZATION_ID,
             domain=settings.DOMAIN
-        )
-        # シリアライズ
+        ) 
         with open(self.client_instance_file, 'wb') as f:
             pickle.dump(sf, f)
+        os.remove(self.lock_file)
+
+        
+
+    def file_created_at(self, file):
+        return os.path.getctime(file)
+
+
+    def isTokenExpired(self):
+        created_at = int(os.path.getctime(self.client_instance_file))
+        now = int(time.time())
+        return now - created_at > self.token_expires
 
     ############################################
     # public
@@ -80,12 +104,12 @@ class LibMtSalesForce():
     def query(self, soql, retry=0):
         func = functools.partial(self.client.query, soql)
         res = self._request_with_retry(func)
-        return self.to_json(res['records']) # dataだけ返す
+        return self.to_json(res['records'])  # dataだけ返す
 
     def apexecute(self, api_path, method, data):
         func = functools.partial(self.client.apexecute, api_path, method, data)
         return self.to_json(self._request_with_retry(func))
-    
+
     # 戻り値はResponseオブジェクトを返すので、
     # 利用側でcontetnsからデータを取得する
     def http_request(self, api_path, method, data):
@@ -94,20 +118,19 @@ class LibMtSalesForce():
 
     ############################################
     # private
-    ########################DOMAIN####################
+    ############################################
 
-    def to_json (self, dict):
-        return json.dumps(dict,ensure_ascii=False)
+
     # 関数(引数固定済み)を受け取ってそれを実行、
     # 認証失敗の場合、認証を取得し直して一定回数リトライする
-
     def _request_with_retry(self, func, *args, retry=0):
         try:
             return func()
         except SalesforceExpiredSession as e:
             p("[Log]SalesforceExpiredSession")
             if(retry < 2):
-                self.reload_client()
+                os.remove(self.client_instance_file)
+                self.load_client()
                 return self._request_with_retry(func, retry=retry + 1)
             else:
                 # TODO: log出力と通知
@@ -138,59 +161,5 @@ class LibMtSalesForce():
         # p(vars(response))
         return response
 
-    ############################################
-    # retry
-    ############################################
-
-    # def query(self, soql, retry=0):
-    #     try:
-    #         return self.client.query(soql)
-    #     except SalesforceExpiredSession as e:
-    #         p("[Log]SalesforceExpiredSession")
-    #         if(retry < 3):
-    #             self.reload_client()
-    #             return self.client.query(soql)
-    #         else:
-    #             # TODO: log出力と通知
-    #             p("[Log]retry stop")
-    #             p(e)
-    #     except Exception as e:
-    #         # TODO: log出力と通知
-    #         p("[Log]query Exception")
-    #         p(e)
-
-    # def apexecute(self, api_path, method, data, retry=0):
-    #     try:
-    #         return self.client.apexecute(api_path, method, data)
-    #     except SalesforceExpiredSession as e:
-    #         p("[Log]SalesforceExpiredSession")
-    #         if(retry < 3):
-    #             self.reload_client()
-    #             return self.client.apexecute(api_path, method, data)
-    #         else:
-    #             # TODO: log出力と通知
-    #             p("[Log]retry stop")
-    #     except Exception as e:
-    #         # TODO: log出力と通知
-    #         p("[Log]query Exception")
-    #         p(e)
-
-    # def raw_request(self, api_path, method):
-    #     """ クライアントを使わないでシンプルにrequestを送る
-    #     """
-    #     path = self.client.base_url + api_path
-    #     p("path:" +  path)
-
-    #     item_data = {
-    #         'SessionId__c': 'AAAAAAAAAAAAAAAA',
-    #     }
-
-    #     with requests.session() as s:
-    #         response = s.request(
-    #             method,
-    #             path,
-    #             headers=self.client.headers,
-    #             cookies={'sid': self.client.session_id},
-    #             json = item_data
-    #         )
-    #     p(vars(response))
+    def to_json(self, dict):
+        return json.dumps(dict, ensure_ascii=False)
