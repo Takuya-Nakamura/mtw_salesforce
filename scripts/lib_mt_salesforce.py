@@ -40,7 +40,7 @@ class LibMtSalesForce():
     """
 
     def __init__(self):
-        self.token_expires = 100000  # tokenの有効期限秒
+        self.token_expires = 1000000  # tokenの有効期限秒
         self.load_wait = 3  # token_更新待ちの待機時間 
         
         file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -55,16 +55,15 @@ class LibMtSalesForce():
     def load_client(self):
         """set simple_salesforce instance
         """
+        with open(self.client_instance_file, 'rb') as f:
+            self.client = pickle.load(f)
+
         #lockファイルが有る場合は一定秒wait
-        if os.path.exists(self.lock_file):
-            p("wait")
+        if os.path.exists(self.lock_file):            
             time.sleep(self.load_wait)
 
         # ファイルが存在する。作成日からexpires秒経過していたら再認証する。
-        p("self.isTokenExpired()")
-        p(self.isTokenExpired())
-
-        if os.path.exists(self.client_instance_file) == False or self.isTokenExpired():
+        if self.isTokenFileValid() == False:
             p("[Log]]Auth from Salesforce")
             self.authenticate()
             self.load_client()
@@ -81,40 +80,40 @@ class LibMtSalesForce():
             security_token=settings.SALESFORCE_SECURITY_TOKEN,
             organizationId=settings.SALESFORCE_ORGANIZATION_ID,
             domain=settings.DOMAIN
-        ) 
+        )
         with open(self.client_instance_file, 'wb') as f:
             pickle.dump(sf, f)
         os.remove(self.lock_file)
 
-        
-
     def file_created_at(self, file):
         return os.path.getctime(file)
 
-
-    def isTokenExpired(self):
+    def isTokenFileValid(self):
+        # token存在チェック
+        if os.path.exists(self.client_instance_file) == False: 
+            return False            
         created_at = int(os.path.getctime(self.client_instance_file))
         now = int(time.time())
-        return now - created_at > self.token_expires
+        return now - created_at < self.token_expires
 
     ############################################
     # public
     ############################################
 
     def query(self, soql, retry=0):
-        func = functools.partial(self.client.query, soql)
+        func = functools.partial(self._query, soql)
         res = self._request_with_retry(func)
         return self.to_json(res['records'])  # dataだけ返す
 
     def apexecute(self, api_path, method, data):
-        func = functools.partial(self.client.apexecute, api_path, method, data)
+        func = functools.partial(self._apexecute, api_path, method, data)
         return self.to_json(self._request_with_retry(func))
 
-    # 戻り値はResponseオブジェクトを返すので、
-    # 利用側でcontetnsからデータを取得する
+    # 戻り値はResponseオブジェクトを返すので、利用側でcontetnsからデータを取得する
     def http_request(self, api_path, method, data):
         func = functools.partial(self._http_request, api_path, method, data)
         return self._request_with_retry(func)
+
 
     ############################################
     # private
@@ -127,9 +126,10 @@ class LibMtSalesForce():
         try:
             return func()
         except SalesforceExpiredSession as e:
-            p("[Log]SalesforceExpiredSession")
-            if(retry < 2):
+            p("[Error]]SalesforceExpiredSession")
+            if(retry < 3):
                 os.remove(self.client_instance_file)
+                self.authenticate()
                 self.load_client()
                 return self._request_with_retry(func, retry=retry + 1)
             else:
@@ -141,14 +141,19 @@ class LibMtSalesForce():
             p("[Log]query Exception2")
             p(e)
 
-    # simple_salesforceを使わない、リクエスト
-    #
+    #これを経由しないと、client更新してretryするときにに古いままのtoken情報でのリクエストが実行されてしまう。
+    def _query(self, soql):
+        return self.client.query(soql)
+    
+    #これを経由しないと、client更新してretryするときにに古いままのtoken情報でのリクエストが実行されてしまう。
+    def _apexecute(self, api_path, method, data):
+        return self.client.apexecute(api_path, method, data)
+
+
     def _http_request(self, api_path, method, data):
         """ ライブラリを使わないでシンプルにrequestを送る
         """
         path = self.client.base_url + api_path
-        p("path")
-        p(path)
 
         with requests.session() as s:
             response = s.request(
@@ -158,7 +163,6 @@ class LibMtSalesForce():
                 cookies={'sid': self.client.session_id},
                 json=data
             )
-        # p(vars(response))
         return response
 
     def to_json(self, dict):
