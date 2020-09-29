@@ -13,14 +13,12 @@ def main():
     check_args(args, 2) 
 
     object_name = args[1]
-    account_id = args[2] # idが不要な場合もある..?
+    id = args[2] # idが不要な場合もある..?
     msf = LibMtSalesForce()
 
-    api_path = 'sobjects/%s/%s' %(object_name,account_id)
+    api_path = 'sobjects/%s/%s' %(object_name,id)
     payload = {}
     response = msf.http_request(api_path, method='GET', data=payload)
-    # p(vars(response))
-    #p(response.content.decode())
     return response.content.decode() # byte->string
 
 
