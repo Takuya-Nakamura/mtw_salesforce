@@ -41,8 +41,8 @@ class LibMtSalesForce():
 
     def __init__(self):
         self.token_expires = 1000000  # tokenの有効期限秒
-        self.load_wait = 3  # token_更新待ちの待機時間 
-        
+        self.load_wait = 3  # token_更新待ちの待機時間
+
         file_dir = os.path.dirname(os.path.realpath(__file__))
         self.client_instance_file = '%s/access_object' % (file_dir)
         self.lock_file = '%s/access_object_lock' % (file_dir)
@@ -58,8 +58,8 @@ class LibMtSalesForce():
         with open(self.client_instance_file, 'rb') as f:
             self.client = pickle.load(f)
 
-        #lockファイルが有る場合は一定秒wait
-        if os.path.exists(self.lock_file):            
+        # lockファイルが有る場合は一定秒wait
+        if os.path.exists(self.lock_file):
             time.sleep(self.load_wait)
 
         # ファイルが存在する。作成日からexpires秒経過していたら再認証する。
@@ -73,7 +73,7 @@ class LibMtSalesForce():
                 self.client = pickle.load(f)
 
     def authenticate(self):
-        Path(self.lock_file).touch() #create lockfile
+        Path(self.lock_file).touch()  # create lockfile
         sf = Salesforce(
             username=settings.SALESFORCE_USERNAME,
             password=settings.SALESFORCE_PASSWORD,
@@ -90,8 +90,8 @@ class LibMtSalesForce():
 
     def isTokenFileValid(self):
         # token存在チェック
-        if os.path.exists(self.client_instance_file) == False: 
-            return False            
+        if os.path.exists(self.client_instance_file) == False:
+            return False
         created_at = int(os.path.getctime(self.client_instance_file))
         now = int(time.time())
         return now - created_at < self.token_expires
@@ -114,14 +114,13 @@ class LibMtSalesForce():
         func = functools.partial(self._http_request, api_path, method, data)
         return self._request_with_retry(func)
 
-
     ############################################
     # private
     ############################################
 
-
     # 関数(引数固定済み)を受け取ってそれを実行、
     # 認証失敗の場合、認証を取得し直して一定回数リトライする
+
     def _request_with_retry(self, func, *args, retry=0):
         try:
             return func()
@@ -141,14 +140,13 @@ class LibMtSalesForce():
             p("[Log]query Exception2")
             p(e)
 
-    #これを経由しないと、client更新してretryするときにに古いままのtoken情報でのリクエストが実行されてしまう。
+    # これを経由しないと、client更新してretryするときにに古いままのtoken情報でのリクエストが実行されてしまう。
     def _query(self, soql):
         return self.client.query(soql)
-    
-    #これを経由しないと、client更新してretryするときにに古いままのtoken情報でのリクエストが実行されてしまう。
+
+    # これを経由しないと、client更新してretryするときにに古いままのtoken情報でのリクエストが実行されてしまう。
     def _apexecute(self, api_path, method, data):
         return self.client.apexecute(api_path, method, data)
-
 
     def _http_request(self, api_path, method, data):
         """ ライブラリを使わないでシンプルにrequestを送る

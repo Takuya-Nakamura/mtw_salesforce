@@ -2,7 +2,8 @@ from pprint import pprint as p
 from lib_mt_salesforce import LibMtSalesForce
 import sys
 import pandas as pd
-from util import * 
+from util import *
+
 
 def main():
     """ SalesforceのLightning Platform REST API にリクエスト

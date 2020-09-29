@@ -2,7 +2,8 @@ from pprint import pprint as p
 from lib_mt_salesforce import LibMtSalesForce
 import sys
 import pandas as pd
-from util import * 
+from util import *
+
 
 def main():
     """ 
@@ -24,8 +25,6 @@ def main():
     account_id = response['records'][0]['AccountAddresses__r']['records'][0]['Id']
     p(account_id)
     return account_id
-
-
 
 
 if __name__ == "__main__":
