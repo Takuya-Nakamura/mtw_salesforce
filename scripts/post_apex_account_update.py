@@ -1,30 +1,29 @@
 from pprint import pprint as p
 from lib_mt_salesforce import LibMtSalesForce
 import sys
-import pandas as pd
+import json
 from util import *
 
 
 def main():
-    """ 
+    """ Account作成
     """
+    # TODO: パラメータでjson取得
+    # dev ダミーデータ
+    file = open('./data/post_apex_account_update.json', 'r')
+    data = json.load(file)
 
-    args = sys.argv
-    check_args(args, 1)
+    # args = sys.argv
+    # check_args(args, 0)
 
-    account_id = args[1]
     msf = LibMtSalesForce()
 
-    soql =  \
-        "SELECT (SELECT Id, AddressClass__c FROM " \
-        "AccountAddresses__r WHERE AddressClass__c = '主たる勤務先') " \
-        "FROM Account WHERE Id = '%s'" % (account_id)
-
-    response = msf.query(soql)
-
-    account_id = response['records'][0]['AccountAddresses__r']['records'][0]['Id']
-    p(account_id)
-    return account_id
+    api_path = 'account/update_with_relations/'
+    payload = data
+    response = msf.apexecute(api_path, method='POST', data=data)
+    p(response)
+    
+    return response
 
 
 if __name__ == "__main__":

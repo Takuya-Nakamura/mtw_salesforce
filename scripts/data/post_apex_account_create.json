@@ -1,0 +1,101 @@
+{
+    "MstMemberClassId__c": "a00N000000AWv76IAD",
+    "StudentWorkingForm__c": null,
+    "StudentGraduationDay__c": null,
+    "CMSId__c": "521991",
+    "AccountSpeciality__c": {
+        "records": [
+            {
+                "MstSpeciality__c": "a00N000000AWv55IAD",
+                "attributes": {
+                    "referenceId": "ref11",
+                    "type": "AccountSpeciality__c"
+                }
+            }
+        ]
+    },
+    "MailAddr__c": "nakamura0803@gmail.com",
+    "MtwMemberFlag__c": "true",
+    "StudentID__c": null,
+    "MtNumber__c": null,
+    "Point__c": "0",
+    "MtPostFlag__c": "false",
+    "MstLicenseId__c": null,
+    "LicenseYear__c": "1999",
+    "MstPositionId__c": "",
+    "UniversityOther__c": null,
+    "attributes": {
+        "referenceId": "ref1",
+        "type": "Account"
+    },
+    "AccountSociety__c": {
+        "records": [
+            {
+                "attributes": {
+                    "referenceId": "ref12",
+                    "type": "AccountSociety__c"
+                },
+                "MstSociety__c": "a00N000000AWv8vIAD"
+            }
+        ]
+    },
+    "MstJobCategoryUsualId__c": null,
+    "Sex__c": "男性",
+    "Nickname__c": "ニックネーム",
+    "StudentHospitalDepartment__c": null,
+    "MtMlmgLifeFlag__c": "false",
+    "InterestedHospitalDepartment__c": "a00N000000AWvBNIA1",
+    "FirstName__c": "ファーストネーム",
+    "MstJobCategoryComedicalId__c": null,
+    "MtMlmgHcmanagementFlag__c": "false",
+    "LastName__c": "ラストネーム",
+    "Birthday__c": "1990-02-03T00:00:00",
+    "MtMlmgMtnewsFlag__c": "true",
+    "PositionNote__c": "",
+    "KanaMei__c": "カナメイ",
+    "ImsMonitor__c": "false",
+    "MemberRequiredChecked__c": "true",
+    "KanaSei__c": "カナセイ",
+    "StudentInternHospital__c": null,
+    "StudentUniversityOther__c": null,
+    "LicenseNumber__c": null,
+    "Address__c": {
+        "records": [
+            {
+                "EmpDepartment__c": "部署",
+                "AddressClass__c": "所属クラス",
+                "Pref__c": "都道府県",
+                "City__c": "市区町村",
+                "Zip__c": "0028072",
+                "is_new_address": null,
+                "EmpClass__c": "9999",
+                "Tel__c": "9999999999",
+                "EmpName__c": "組織名",
+                "Address__c": "アドレス",
+                "MstWorkClassId__c": "a00N000000AWv7iIAD",
+                "AccountCategory__c": {
+                    "records": [
+                        {
+                            "MstCategory__c": "a00N000000AWvBNIA1",
+                            "attributes": {
+                                "referenceId": "ref3",
+                                "type": "AccountCategory__c"
+                            },
+                            "IsPrimary__c": "true"
+                        }
+                    ]
+                },
+                "attributes": {
+                    "referenceId": "ref2",
+                    "type": "Address__c"
+                },
+                "shisetsu_code__c": "1104788"
+            }
+        ]
+    },
+    "StudentMstUniversityId__c": null,
+    "Name": "MTW",
+    "Event__c": null,
+    "CampaignCode__c": "",
+    "MstUniversityId__c": "a00N000000IevDkIAJ"
+}

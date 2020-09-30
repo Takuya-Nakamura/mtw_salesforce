@@ -9,21 +9,18 @@ def main():
     """ 
     """
     # TODO: パラメータでjson取得
-    # dev ダミーデータ
-    file = open('./data/post_apex_question.json', 'r')
+    file = open('./data/post_sobject.json', 'r')
     data = json.load(file)
 
-    # args = sys.argv
-    # check_args(args, 0)
-
+    args = sys.argv
+    check_args(args, 1)
+    object_name = args[1]
     msf = LibMtSalesForce()
 
-    api_path = 'simple_questionnaire/question/updater/'
-    payload = data
-    response = msf.apexecute(api_path, method='POST', data=data)
+    api_path = 'sobjects/%s/' % (object_name)
+    response = msf.http_request(api_path, method='POST', data=data)
     p(response)
-    
-    return response
+    return response.content.decode()  # byte->string
 
 
 if __name__ == "__main__":
